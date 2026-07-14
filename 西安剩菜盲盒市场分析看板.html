@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>西安剩菜盲盒市场分析项目 | 数据分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f0f2f5; color: #333; }
+.header { background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%); color: #fff; padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 20px 40px; margin-top: -10px; }
+.kpi-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); text-align: center; }
+.kpi-card .value { font-size: 28px; font-weight: 700; color: #1a5276; }
+.kpi-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+.tabs { display: flex; gap: 0; padding: 0 40px; background: #fff; border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 10; }
+.tab-btn { padding: 14px 24px; border: none; background: none; font-size: 14px; color: #666; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; font-family: inherit; }
+.tab-btn:hover { color: #2e86c1; }
+.tab-btn.active { color: #2e86c1; border-bottom-color: #2e86c1; font-weight: 600; }
+.tab-content { display: none; padding: 24px 40px; }
+.tab-content.active { display: block; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.chart-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.chart-card h3 { font-size: 15px; color: #1a5276; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; }
+.chart-card.full { grid-column: 1 / -1; }
+.chart-wrap { position: relative; height: 280px; }
+.chart-wrap.tall { height: 340px; }
+.chart-wrap.short { height: 240px; }
+.sql-section { background: #1e1e1e; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
+.sql-section .sql-header { display: flex; justify-content: space-between; align-items: center; color: #9cdcfe; font-size: 13px; }
+.sql-section .sql-level { background: #2e86c1; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.sql-section .sql-code { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; color: #d4d4d4; margin-top: 10px; white-space: pre-wrap; display: none; line-height: 1.6; }
+.sql-section.open .sql-code { display: block; }
+.sql-section .sql-code .kw { color: #569cd6; }
+.sql-section .sql-code .fn { color: #dcdcaa; }
+.sql-section .sql-code .str { color: #ce9178; }
+.sql-section .sql-code .num { color: #b5cea8; }
+.sql-section .sql-code .cmt { color: #6a9955; }
+.funnel-wrap { max-width: 600px; margin: 0 auto; }
+.funnel-step { display: flex; align-items: center; margin-bottom: 8px; position: relative; }
+.funnel-bar { height: 44px; border-radius: 6px; display: flex; align-items: center; padding: 0 16px; color: #fff; font-size: 14px; font-weight: 500; transition: width 0.5s; }
+.funnel-bar .count { margin-left: auto; font-size: 16px; font-weight: 700; }
+.footer { text-align: center; padding: 24px; color: #999; font-size: 13px; border-top: 1px solid #e8e8e8; margin-top: 20px; }
+.arrow-down { text-align: center; color: #bbb; font-size: 18px; margin: 2px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>西安剩菜盲盒市场分析项目</h1>
+    <div class="subtitle">基于624份有效问卷 | 6表规范化数据库 | 西安居民剩菜盲盒认知与购买意愿调查</div>
+  </div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi-card"><div class="value" id="kpi-total">624</div><div class="label">有效问卷数</div></div>
+  <div class="kpi-card"><div class="value" id="kpi-willing">80.6%</div><div class="label">愿意尝试购买</div></div>
+  <div class="kpi-card"><div class="value" id="kpi-purchased">55.3%</div><div class="label">曾经购买过</div></div>
+  <div class="kpi-card"><div class="value" id="kpi-attitude">4.07</div><div class="label">态度均分 (满分5)</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(0)">受访者画像</button>
+  <button class="tab-btn" onclick="switchTab(1)">认知与意愿</button>
+  <button class="tab-btn" onclick="switchTab(2)">决策因素分析</button>
+  <button class="tab-btn" onclick="switchTab(3)">用户群体细分</button>
+  <button class="tab-btn" onclick="switchTab(4)">SQL查询展示</button>
+</div>
+
+<!-- TAB 0: 受访者画像 -->
+<div class="tab-content active" id="tab-0">
+  <div class="chart-grid">
+    <div class="chart-card"><h3>性别分布</h3><div class="chart-wrap short"><canvas id="chart-gender"></canvas></div></div>
+    <div class="chart-card"><h3>年龄分布</h3><div class="chart-wrap short"><canvas id="chart-age"></canvas></div></div>
+    <div class="chart-card"><h3>学历分布</h3><div class="chart-wrap short"><canvas id="chart-edu"></canvas></div></div>
+    <div class="chart-card"><h3>收入水平分布</h3><div class="chart-wrap short"><canvas id="chart-income"></canvas></div></div>
+  </div>
+</div>
+
+<!-- TAB 1: 认知与意愿 -->
+<div class="tab-content" id="tab-1">
+  <div class="chart-grid">
+    <div class="chart-card"><h3>剩菜盲盒了解程度</h3><div class="chart-wrap"><canvas id="chart-awareness"></canvas></div></div>
+    <div class="chart-card"><h3>转化漏斗：认知→购买</h3><div class="chart-wrap"><div id="funnel-container"></div></div></div>
+    <div class="chart-card"><h3>各学历层次购买意愿率对比</h3><div class="chart-wrap"><canvas id="chart-edu-willing"></canvas></div></div>
+    <div class="chart-card"><h3>购买意向各维度评分</h3><div class="chart-wrap"><canvas id="chart-intent-dims"></canvas></div></div>
+  </div>
+</div>
+
+<!-- TAB 2: 决策因素 -->
+<div class="tab-content" id="tab-2">
+  <div class="chart-grid">
+    <div class="chart-card"><h3>购买动机排名（愿意购买者）</h3><div class="chart-wrap"><canvas id="chart-motivation"></canvas></div></div>
+    <div class="chart-card"><h3>购买障碍排名（不愿意购买者）</h3><div class="chart-wrap"><canvas id="chart-barrier"></canvas></div></div>
+    <div class="chart-card full"><h3>决策因素影响力雷达图 (1-7量表)</h3><div class="chart-wrap tall"><canvas id="chart-radar"></canvas></div></div>
+  </div>
+</div>
+
+<!-- TAB 3: 用户细分 -->
+<div class="tab-content" id="tab-3">
+  <div class="chart-grid">
+    <div class="chart-card"><h3>用户群体RFM式分段</h3><div class="chart-wrap"><canvas id="chart-segments"></canvas></div></div>
+    <div class="chart-card"><h3>群体画像对比</h3>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:#1a5276;color:#fff;">
+            <th style="padding:8px;text-align:left;">群体</th><th style="padding:8px;">人数</th><th style="padding:8px;">意向均分</th><th style="padding:8px;">特征</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;">核心用户</td><td style="padding:8px;text-align:center;">8</td><td style="padding:8px;text-align:center;">4.56</td><td style="padding:8px;">高频购买+高意向+高满意度</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;">活跃用户</td><td style="padding:8px;text-align:center;">245</td><td style="padding:8px;text-align:center;">4.24</td><td style="padding:8px;">已购买+高意向</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;">潜力用户</td><td style="padding:8px;text-align:center;">219</td><td style="padding:8px;text-align:center;">4.04</td><td style="padding:8px;">愿意但未购买</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;">观望用户</td><td style="padding:8px;text-align:center;">53</td><td style="padding:8px;text-align:center;">2.72</td><td style="padding:8px;">愿意但意向偏低</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;">流失用户</td><td style="padding:8px;text-align:center;">99</td><td style="padding:8px;text-align:center;">2.80</td><td style="padding:8px;">不愿意购买</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card full"><h3>关键洞察</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;line-height:1.8;">
+        <div style="background:#eaf2f8;padding:12px;border-radius:6px;">
+          <strong style="color:#1a5276;">核心发现 1:</strong> 价格实惠(67%)与惊喜感(64%)是两大购买驱动力<br>
+          <strong style="color:#1a5276;">核心发现 2:</strong> 食品质量安全疑虑(85%)是最大消费障碍<br>
+        </div>
+        <div style="background:#eaf2f8;padding:12px;border-radius:6px;">
+          <strong style="color:#1a5276;">核心发现 3:</strong> 质量(6.0/7)和商家信誉(5.82/7)是决策首要因素<br>
+          <strong style="color:#1a5276;">核心发现 4:</strong> 社交+朋友双渠道认知者购买意愿最高<br>
+        </div>
+        <div style="background:#eaf2f8;padding:12px;border-radius:6px;">
+          <strong style="color:#1a5276;">核心发现 5:</strong> 高中/中专学历愿意率最高(90.2%)，硕士及以上最低(76.4%)<br>
+          <strong style="color:#1a5276;">核心发现 6:</strong> 了解程度一般及以上仅51.3%，市场教育空间大<br>
+        </div>
+        <div style="background:#eaf2f8;padding:12px;border-radius:6px;">
+          <strong style="color:#1a5276;">核心发现 7:</strong> 核心用户仅8人(1.3%)，活跃用户245人(39.3%)<br>
+          <strong style="color:#1a5276;">核心发现 8:</strong> 社交分享意愿(3.67/5)低于环保支持(4.02/5)，传播力待提升<br>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: SQL查询展示 -->
+<div class="tab-content" id="tab-4">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div>
+      <h3 style="font-size:15px;color:#1a5276;margin-bottom:12px;">查询能力矩阵</h3>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L1-基础: 多条件筛选 + CASE WHEN</span><span class="sql-level">入门</span></div>
+        <div class="sql-code"><span class="kw">SELECT</span> respondent_id, gender, age_group,
+       <span class="kw">CASE</span> monthly_income <span class="kw">WHEN</span> <span class="num">2</span> <span class="kw">THEN</span> <span class="str">'3000-5000'</span> <span class="kw">END</span> <span class="kw">AS</span> income_label
+<span class="kw">FROM</span> respondents
+<span class="kw">WHERE</span> gender = <span class="num">1</span> <span class="kw">AND</span> age_group <span class="kw">BETWEEN</span> <span class="num">2</span> <span class="kw">AND</span> <span class="num">4</span>
+  <span class="kw">AND</span> education >= <span class="num">4</span>
+<span class="kw">ORDER BY</span> monthly_income <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">20</span>;</div>
+      </div>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L2-聚合: GROUP BY + HAVING</span><span class="sql-level">初级</span></div>
+        <div class="sql-code"><span class="kw">SELECT</span> occupation, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> cnt,
+       <span class="fn">ROUND</span>(<span class="fn">AVG</span>(a.att_avg_score), <span class="num">2</span>) <span class="kw">AS</span> avg_attitude
+<span class="kw">FROM</span> respondents r
+<span class="kw">JOIN</span> attitude_scores a <span class="kw">ON</span> r.respondent_id = a.respondent_id
+<span class="kw">GROUP BY</span> r.occupation
+<span class="kw">HAVING</span> <span class="fn">AVG</span>(a.att_avg_score) > <span class="num">4.0</span>
+   <span class="kw">AND</span> <span class="fn">COUNT</span>(*) >= <span class="num">10</span>
+<span class="kw">ORDER BY</span> avg_attitude <span class="kw">DESC</span>;</div>
+      </div>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L3-连接: 五表INNER JOIN全画像</span><span class="sql-level">中级</span></div>
+        <div class="sql-code"><span class="kw">SELECT</span> r.respondent_id,
+       <span class="kw">CASE</span> r.gender <span class="kw">WHEN</span> <span class="num">1</span> <span class="kw">THEN</span> <span class="str">'男'</span> <span class="kw">WHEN</span> <span class="num">2</span> <span class="kw">THEN</span> <span class="str">'女'</span> <span class="kw">END</span> <span class="kw">AS</span> gender,
+       c.awareness_level, pw.willing_to_try,
+       a.att_avg_score, i.int_avg_score, d.f_quality
+<span class="kw">FROM</span> respondents r
+<span class="kw">JOIN</span> cognition c <span class="kw">ON</span> r.respondent_id = c.respondent_id
+<span class="kw">JOIN</span> purchase_willingness pw <span class="kw">ON</span> r.respondent_id = pw.respondent_id
+<span class="kw">JOIN</span> attitude_scores a <span class="kw">ON</span> r.respondent_id = a.respondent_id
+<span class="kw">JOIN</span> intention_scores i <span class="kw">ON</span> r.respondent_id = i.respondent_id
+<span class="kw">JOIN</span> decision_factors d <span class="kw">ON</span> r.respondent_id = d.respondent_id
+<span class="kw">WHERE</span> i.int_avg_score >= <span class="num">4.0</span>
+<span class="kw">ORDER BY</span> i.int_avg_score <span class="kw">DESC</span>;</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:15px;color:#1a5276;margin-bottom:12px;">&nbsp;</h3>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L4-高级: CTE + 窗口函数</span><span class="sql-level">高级</span></div>
+        <div class="sql-code"><span class="kw">WITH</span> age_stats <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> r.age_group, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total,
+         <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> pw.willing_to_try=<span class="num">1</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> willing,
+         <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> pw.has_purchased=<span class="num">1</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> purchased
+  <span class="kw">FROM</span> respondents r
+  <span class="kw">JOIN</span> purchase_willingness pw <span class="kw">ON</span> r.respondent_id=pw.respondent_id
+  <span class="kw">GROUP BY</span> r.age_group
+)
+<span class="kw">SELECT</span> age_group, total, willing, purchased,
+  <span class="fn">ROUND</span>(<span class="num">100.0</span>*willing/total,<span class="num">1</span>) <span class="kw">AS</span> willingness_rate,
+  <span class="fn">ROUND</span>(<span class="num">100.0</span>*purchased/total,<span class="num">1</span>) <span class="kw">AS</span> purchase_rate,
+  <span class="fn">ROUND</span>(<span class="num">100.0</span>*purchased/<span class="fn">NULLIF</span>(willing,<span class="num">0</span>),<span class="num">1</span>) <span class="kw">AS</span> conversion
+<span class="kw">FROM</span> age_stats <span class="kw">ORDER BY</span> age_group;</div>
+      </div>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L4-高级: 相关子查询 + EXISTS</span><span class="sql-level">高级</span></div>
+        <div class="sql-code"><span class="kw">SELECT</span> r.respondent_id, r.occupation,
+       <span class="fn">ROUND</span>(a.att_avg_score,<span class="num">2</span>) <span class="kw">AS</span> my_attitude,
+       (<span class="kw">SELECT</span> <span class="fn">ROUND</span>(<span class="fn">AVG</span>(a2.att_avg_score),<span class="num">2</span>)
+        <span class="kw">FROM</span> attitude_scores a2
+        <span class="kw">JOIN</span> respondents r2 <span class="kw">ON</span> a2.respondent_id=r2.respondent_id
+        <span class="kw">WHERE</span> r2.occupation = r.occupation) <span class="kw">AS</span> occ_avg
+<span class="kw">FROM</span> respondents r
+<span class="kw">JOIN</span> attitude_scores a <span class="kw">ON</span> r.respondent_id=a.respondent_id
+<span class="kw">WHERE EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> purchase_willingness pw
+  <span class="kw">WHERE</span> pw.respondent_id=r.respondent_id <span class="kw">AND</span> pw.willing_to_try=<span class="num">1</span>
+)
+<span class="kw">AND</span> a.att_avg_score > (<span class="kw">SELECT</span> <span class="fn">AVG</span>(a2.att_avg_score)
+    <span class="kw">FROM</span> attitude_scores a2 <span class="kw">JOIN</span> respondents r2
+    <span class="kw">ON</span> a2.respondent_id=r2.respondent_id
+    <span class="kw">WHERE</span> r2.occupation=r.occupation)
+<span class="kw">ORDER BY</span> r.occupation;</div>
+      </div>
+      <div class="sql-section" onclick="this.classList.toggle('open')">
+        <div class="sql-header"><span>L5-分析: RFM用户分段</span><span class="sql-level">专家</span></div>
+        <div class="sql-code"><span class="kw">SELECT</span>
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> pw.has_purchased=<span class="num">1</span> <span class="kw">AND</span> pw.purchase_freq>=<span class="num">3</span>
+         <span class="kw">AND</span> i.int_avg_score>=<span class="num">4.5</span> <span class="kw">THEN</span> <span class="str">'核心用户'</span>
+    <span class="kw">WHEN</span> pw.has_purchased=<span class="num">1</span> <span class="kw">AND</span> i.int_avg_score>=<span class="num">4.0</span>
+         <span class="kw">THEN</span> <span class="str">'活跃用户'</span>
+    <span class="kw">WHEN</span> pw.willing_to_try=<span class="num">1</span> <span class="kw">AND</span> i.int_avg_score>=<span class="num">3.5</span>
+         <span class="kw">THEN</span> <span class="str">'潜力用户'</span>
+    <span class="kw">WHEN</span> pw.willing_to_try=<span class="num">1</span> <span class="kw">THEN</span> <span class="str">'观望用户'</span>
+    <span class="kw">ELSE</span> <span class="str">'流失用户'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> user_segment,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> count,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(i.int_avg_score),<span class="num">2</span>) <span class="kw">AS</span> avg_intention
+<span class="kw">FROM</span> respondents r
+<span class="kw">JOIN</span> purchase_willingness pw <span class="kw">ON</span> r.respondent_id=pw.respondent_id
+<span class="kw">JOIN</span> intention_scores i <span class="kw">ON</span> r.respondent_id=i.respondent_id
+<span class="kw">GROUP BY</span> user_segment
+<span class="kw">ORDER BY</span> avg_intention <span class="kw">DESC</span>;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  西安居民剩菜盲盒调查 · SQL能力作品集 · 西北大学 · 正大杯项目
+</div>
+
+<script>
+// ====== DATA (injected from dashboard_data.json) ======
+const DATA = {
+  "gender":[{"label":"男","value":215},{"label":"女","value":409}],
+  "age":[{"label":"18-25","value":186},{"label":"26-35","value":93},{"label":"36-45","value":48},{"label":"46-55","value":137},{"label":"55+","value":2},{"label":"18岁以下","value":158}],
+  "education":[{"label":"本科","value":360},{"label":"大专","value":126},{"label":"高中/中专","value":61},{"label":"硕士及以上","value":55},{"label":"初中及以下","value":22}],
+  "income":[{"label":"<3000","value":193},{"label":"3000-5000","value":133},{"label":"5000-8000","value":110},{"label":"8000-15000","value":102},{"label":">15000","value":86}],
+  "awareness":[{"label":"一般了解","value":199},{"label":"不太了解","value":181},{"label":"非常了解","value":154},{"label":"完全不了解","value":90}],
+  "edu_willing":[{"label":"初中及以下","willing":81.8,"purchased":63.6},{"label":"高中/中专","willing":90.2,"purchased":70.5},{"label":"大专","willing":87.3,"purchased":61.9},{"label":"本科","willing":77.2,"purchased":51.7},{"label":"硕士及以上","willing":76.4,"purchased":50.9}],
+  "motivations":[{"label":"价格实惠","value":337},{"label":"盲盒惊喜感","value":324},{"label":"环保意识","value":317},{"label":"食品安全保障","value":238},{"label":"商家信誉","value":181},{"label":"购买便利性","value":112}],
+  "barriers":[{"label":"质量安全疑虑","value":103},{"label":"倾向新鲜食品","value":88},{"label":"更喜欢自选","value":62},{"label":"价格太高","value":28}],
+  "decision_factors":{"price":5.53,"quality":6.0,"eco":5.52,"brand":5.23,"social":5.31,"variety":5.78,"packaging":5.22,"convenience":5.67,"service":5.82},
+  "segments":[{"label":"活跃用户","value":245},{"label":"潜力用户","value":219},{"label":"流失用户","value":99},{"label":"观望用户","value":53},{"label":"核心用户","value":8}],
+  "funnel":[{"stage":"总受访者","count":624,"pct":100.0},{"stage":"了解","count":353,"pct":56.6},{"stage":"愿意尝试","count":503,"pct":80.6},{"stage":"曾经购买","count":345,"pct":55.3}],
+  "intention_dims":[{"label":"环保支持","score":4.02},{"label":"新颖有趣","score":3.91},{"label":"未来购买","score":3.87},{"label":"满足需求","score":3.87},{"label":"关注信息","score":3.84},{"label":"主动了解","score":3.78},{"label":"社交分享","score":3.67},{"label":"推荐他人","score":3.57}]
+};
+
+const COLORS = ['#2e86c1','#e74c3c','#27ae60','#f39c12','#8e44ad','#1abc9c','#e67e22','#3498db'];
+const COLORS_LIGHT = ['rgba(46,134,193,0.7)','rgba(231,76,60,0.7)','rgba(39,174,96,0.7)','rgba(243,156,18,0.7)','rgba(142,68,173,0.7)','rgba(26,188,156,0.7)'];
+
+// ====== TAB SWITCHING ======
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-content').forEach((t,i) => t.classList.toggle('active', i===idx));
+  if (idx === 0) { renderGender(); renderAge(); renderEdu(); renderIncome(); }
+  if (idx === 1) { renderAwareness(); renderFunnel(); renderEduWilling(); renderIntentDims(); }
+  if (idx === 2) { renderMotivation(); renderBarrier(); renderRadar(); }
+  if (idx === 3) { renderSegments(); }
+}
+
+// ====== CHART HELPERS ======
+function makePie(canvasId, data, title) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, { type: 'doughnut', data: { labels: data.map(d=>d.label), datasets: [{ data: data.map(d=>d.value), backgroundColor: COLORS }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { padding: 12, font: { size: 12 } } } } } });
+}
+function makeBar(canvasId, data, labelKey, valueKey, horizontal) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, { type: horizontal ? 'bar' : 'bar', data: { labels: data.map(d=>d[labelKey]), datasets: [{ data: data.map(d=>d[valueKey]), backgroundColor: COLORS }] },
+    options: { indexAxis: horizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: horizontal ? { x: { beginAtZero: true } } : { y: { beginAtZero: true } } } });
+}
+function makeBarGrouped(canvasId, data, keys) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, { type: 'bar', data: { labels: data.map(d=>d.label),
+    datasets: keys.map((k,i) => ({ label: k.label, data: data.map(d=>d[k.key]), backgroundColor: COLORS[i], borderRadius: 4 })) },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } },
+      scales: { y: { beginAtZero: true, max: 100 } } } });
+}
+
+// ====== TAB 0: 受访者画像 ======
+function renderGender() { makePie('chart-gender', DATA.gender); }
+function renderAge() { makePie('chart-age', DATA.age); }
+function renderEdu() { makePie('chart-edu', DATA.education); }
+function renderIncome() { makePie('chart-income', DATA.income); }
+
+// ====== TAB 1: 认知与意愿 ======
+function renderAwareness() { makePie('chart-awareness', DATA.awareness); }
+
+function renderFunnel() {
+  const container = document.getElementById('funnel-container');
+  const funnel = DATA.funnel;
+  const colors = ['#1a5276','#2e86c1','#3498db','#85c1e9'];
+  const maxCount = funnel[0].count;
+  let html = '';
+  funnel.forEach((step, i) => {
+    const w = Math.max(40, (step.count / maxCount) * 100);
+    html += `<div class="funnel-step"><div class="funnel-bar" style="width:${w}%;background:${colors[i]};">
+      ${step.stage}<span class="count">${step.count}人 (${step.pct}%)</span></div></div>`;
+    if (i < funnel.length - 1) html += '<div class="arrow-down">▼</div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderEduWilling() {
+  makeBarGrouped('chart-edu-willing', DATA.edu_willing, [
+    { key: 'willing', label: '愿意尝试率%' },
+    { key: 'purchased', label: '购买率%' }
+  ]);
+}
+
+function renderIntentDims() {
+  const data = DATA.intention_dims;
+  const ctx = document.getElementById('chart-intent-dims').getContext('2d');
+  new Chart(ctx, { type: 'bar', data: { labels: data.map(d=>d.label), datasets: [{ data: data.map(d=>d.score), backgroundColor: COLORS }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { min: 3, max: 5, title: { display: true, text: '评分 (满分5)' } } } } });
+}
+
+// ====== TAB 2: 决策因素 ======
+function renderMotivation() { makeBar('chart-motivation', DATA.motivations, 'label', 'value', true); }
+function renderBarrier() { makeBar('chart-barrier', DATA.barriers, 'label', 'value', true); }
+
+function renderRadar() {
+  const df = DATA.decision_factors;
+  const ctx = document.getElementById('chart-radar').getContext('2d');
+  new Chart(ctx, { type: 'radar', data: {
+    labels: ['价格','质量','环保性','品牌知名度','社会认同','种类口味','包装设计','便捷性','商家信誉'],
+    datasets: [{
+      label: '决策因素均分 (1-7)',
+      data: [df.price, df.quality, df.eco, df.brand, df.social, df.variety, df.packaging, df.convenience, df.service],
+      backgroundColor: 'rgba(46,134,193,0.2)', borderColor: '#2e86c1', borderWidth: 2, pointBackgroundColor: '#2e86c1'
+    }]
+  }, options: { responsive: true, maintainAspectRatio: false,
+    scales: { r: { min: 4, max: 7, ticks: { stepSize: 0.5, font: { size: 10 } } } },
+    plugins: { legend: { display: false } } } });
+}
+
+// ====== TAB 3: 用户细分 ======
+function renderSegments() {
+  makePie('chart-segments', DATA.segments);
+}
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', () => {
+  renderGender(); renderAge(); renderEdu(); renderIncome();
+});
+</script>
+</body>
+</html>
