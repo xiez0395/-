@@ -1,0 +1,269 @@
+{
+  "gender": [
+    {
+      "label": "男",
+      "value": 215
+    },
+    {
+      "label": "女",
+      "value": 409
+    }
+  ],
+  "age": [
+    {
+      "label": "18岁以下",
+      "value": 8
+    },
+    {
+      "label": "18-25",
+      "value": 186
+    },
+    {
+      "label": "26-35",
+      "value": 224
+    },
+    {
+      "label": "36-45",
+      "value": 144
+    },
+    {
+      "label": "46-55",
+      "value": 42
+    },
+    {
+      "label": "55+",
+      "value": 20
+    }
+  ],
+  "education": [
+    {
+      "label": "初中及以下",
+      "value": 22
+    },
+    {
+      "label": "高中/中专",
+      "value": 61
+    },
+    {
+      "label": "大专",
+      "value": 126
+    },
+    {
+      "label": "本科",
+      "value": 360
+    },
+    {
+      "label": "硕士及以上",
+      "value": 55
+    }
+  ],
+  "income": [
+    {
+      "label": "<3000",
+      "value": 98
+    },
+    {
+      "label": "3000-5000",
+      "value": 180
+    },
+    {
+      "label": "5000-8000",
+      "value": 174
+    },
+    {
+      "label": "8000-15000",
+      "value": 113
+    },
+    {
+      "label": ">15000",
+      "value": 59
+    }
+  ],
+  "awareness": [
+    {
+      "label": "完全不了解",
+      "value": 88
+    },
+    {
+      "label": "不太了解",
+      "value": 216
+    },
+    {
+      "label": "一般了解",
+      "value": 188
+    },
+    {
+      "label": "非常了解",
+      "value": 132
+    }
+  ],
+  "edu_willing": [
+    {
+      "label": "初中及以下",
+      "willing": 81.8,
+      "purchased": 72.7
+    },
+    {
+      "label": "高中/中专",
+      "willing": 90.2,
+      "purchased": 73.8
+    },
+    {
+      "label": "大专",
+      "willing": 87.3,
+      "purchased": 82.5
+    },
+    {
+      "label": "本科",
+      "willing": 77.2,
+      "purchased": 42.5
+    },
+    {
+      "label": "硕士及以上",
+      "willing": 76.4,
+      "purchased": 49.1
+    }
+  ],
+  "motivations": [
+    {
+      "label": "价格实惠",
+      "value": 336
+    },
+    {
+      "label": "环保意识",
+      "value": 315
+    },
+    {
+      "label": "盲盒惊喜感",
+      "value": 322
+    },
+    {
+      "label": "食品安全保障",
+      "value": 237
+    },
+    {
+      "label": "商家信誉",
+      "value": 181
+    },
+    {
+      "label": "购买便利性",
+      "value": 111
+    }
+  ],
+  "barriers": [
+    {
+      "label": "质量安全疑虑",
+      "value": 103
+    },
+    {
+      "label": "倾向新鲜食品",
+      "value": 88
+    },
+    {
+      "label": "更喜欢自选",
+      "value": 62
+    },
+    {
+      "label": "价格太高",
+      "value": 28
+    }
+  ],
+  "decision_factors": {
+    "price": 5.53,
+    "quality": 6.0,
+    "eco": 5.52,
+    "brand": 5.23,
+    "social": 5.31,
+    "variety": 5.78,
+    "packaging": 5.22,
+    "convenience": 5.67,
+    "service": 5.82
+  },
+  "segments": [
+    {
+      "label": "活跃用户",
+      "value": 245
+    },
+    {
+      "label": "潜力用户",
+      "value": 219
+    },
+    {
+      "label": "流失用户",
+      "value": 99
+    },
+    {
+      "label": "观望用户",
+      "value": 53
+    },
+    {
+      "label": "核心用户",
+      "value": 8
+    }
+  ],
+  "funnel": [
+    {
+      "stage": "总受访者",
+      "count": 624,
+      "pct": 100.0
+    },
+    {
+      "stage": "了解(>=一般)",
+      "count": 320,
+      "pct": 51.3
+    },
+    {
+      "stage": "愿意尝试",
+      "count": 503,
+      "pct": 80.6
+    },
+    {
+      "stage": "曾经购买",
+      "count": 345,
+      "pct": 55.3
+    }
+  ],
+  "intention_dims": [
+    {
+      "label": "主动了解",
+      "score": 3.78
+    },
+    {
+      "label": "环保支持",
+      "score": 4.02
+    },
+    {
+      "label": "新颖有趣",
+      "score": 3.91
+    },
+    {
+      "label": "满足需求",
+      "score": 3.87
+    },
+    {
+      "label": "未来购买",
+      "score": 3.87
+    },
+    {
+      "label": "关注信息",
+      "score": 3.84
+    },
+    {
+      "label": "推荐他人",
+      "score": 3.57
+    },
+    {
+      "label": "社交分享",
+      "score": 3.67
+    }
+  ],
+  "summary": {
+    "total": 624,
+    "female_pct": 65.5,
+    "bachelor_pct": 66.5,
+    "attitude_avg": 4.07,
+    "intention_avg": 3.82,
+    "willing_pct": 80.6,
+    "purchased_pct": 55.3
+  }
+}
